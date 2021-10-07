@@ -27,17 +27,22 @@ const reducer = (state = initialState, action) => {
       const id = action.data.id
       const item = state.find((e) => e.id === id)
       const changedItem = { ...item, votes: item.votes + 1 }
-      return state.map((e) => (e.id === id ? changedItem : e))
+      const newList = state.map((e) => (e.id === id ? changedItem : e))
+      return sortByVotes(newList)
     case 'ADD_NEW':
       const newNote = {
         content: action.data.content,
         id: getId(),
         votes: 0,
       }
-      return [...state, newNote]
+      return sortByVotes([...state, newNote])
     default:
-      return state
+      return sortByVotes(state)
   }
+}
+
+const sortByVotes = (data) => {
+  return data.sort((a, b) => b.votes - a.votes)
 }
 
 export const voteNote = (id) => {
