@@ -12,14 +12,18 @@ const notificationReducer = (state = initState, action) => {
 }
 
 export const hideNotification = () => {
+  timerId = undefined
   return {
     type: 'HIDE',
   }
 }
-
+var timerId;
 export const setNotification = (msg, durationInSeconds) => {
   return dispatch => {
-    setTimeout(() => {
+    if (timerId !== undefined) {
+      clearTimeout(timerId)
+    }
+    timerId = setTimeout(() => {
       dispatch(hideNotification())
     }, durationInSeconds * 1000)
     dispatch({
