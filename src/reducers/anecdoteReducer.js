@@ -1,29 +1,54 @@
-const anecdotesAtStart = [
-  'If it hurts, do it more often',
-  'Adding manpower to a late software project makes it later!',
-  'The first 90 percent of the code accounts for the first 90 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
-  'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
-  'Premature optimization is the root of all evil.',
-  'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.'
-]
+import noteService from '../services/notes'
 
-const getId = () => (100000 * Math.random()).toFixed(0)
-
-const asObject = (anecdote) => {
-  return {
-    content: anecdote,
-    id: getId(),
-    votes: 0
+const reducer = (state = [], action) => {
+  console.log('state now: ', state)
+  console.log('action', action)
+  switch (action.type) {
+    case 'VOTE':
+      const id = action.updatedNote.id
+      const newList = state.map((e) => (e.id === id ? action.updatedNote : e))
+      return sortByVotes(newList)
+    case 'ADD_NEW':
+      return sortByVotes([...state, action.newNote])
+    case 'INIT_DATA':
+      return sortByVotes(action.data)
+    default:
+      return sortByVotes(state)
   }
 }
 
-const initialState = anecdotesAtStart.map(asObject)
+const sortByVotes = (data) => {
+  return data.sort((a, b) => b.votes - a.votes)
+}
 
-const reducer = (state = initialState, action) => {
-  console.log('state now: ', state)
-  console.log('action', action)
+export const voteNote = (note) => {
+  return async (dispatch) => {
+    const updatedNote = await noteService.voteNote(note)
+    dispatch({
+      type: 'VOTE',
+      updatedNote,
+    })
+  }
+}
 
-  return state
+export const addNew = (content) => {
+  return async (dispatch) => {
+    const newNote = await noteService.createNew(content)
+    dispatch({
+      type: 'ADD_NEW',
+      newNote,
+    })
+  }
+}
+
+export const initializeData = () => {
+  return async (dispatch) => {
+    const notes = await noteService.getAll()
+    dispatch({
+      type: 'INIT_DATA',
+      data: notes,
+    })
+  }
 }
 
 export default reducer
